@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <title>員工工安教育訓練報名系統</title>
+  <?!= include('CSS'); ?>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>員工工安教育訓練報名系統</h1>
+      <p>一個現代化、高效率的數位報名平台</p>
+    </header>
+
+    <main>
+      <!-- 步驟一：登錄 -->
+      <section id="step1" class="step-section">
+        <h2><span class="step-number">1</span>登錄參加課程</h2>
+        <p class="section-description">請依序選擇您的「部門」與「姓名」，系統將自動列出可報名的課程。勾選後請點擊提交。</p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="department-select">選擇部門</label>
+            <select id="department-select" class="form-control">
+              <option value="" disabled selected>請先選擇部門...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="name-select">選擇姓名</label>
+            <select id="name-select" class="form-control" disabled>
+              <option value="" disabled selected>請先選擇姓名...</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="courses-section" style="display: none;">
+          <div id="modifier-section">
+              <div class="form-group">
+                <label for="modifier-name">修改者姓名</label>
+                <input type="text" id="modifier-name" class="form-control" placeholder="請填寫您的姓名">
+              </div>
+              <div class="form-group">
+                <label for="modification-reason">修改理由</label>
+                <input type="text" id="modification-reason" class="form-control" placeholder="請簡述修改原因">
+              </div>
+          </div>
+
+          <h3>可報名課程</h3>
+          <div id="available-courses" class="courses-grid"></div>
+          
+          <div class="form-group no-participation">
+            <input type="checkbox" id="no-participation-checkbox">
+            <label for="no-participation-checkbox">本人確認本年度無需參加任何工安課程</label>
+          </div>
+
+          <h3>已報名 / 已完成課程</h3>
+          <ul id="attended-courses" class="attended-list"></ul>
+
+          <button id="submit-btn" class="btn btn-primary">提交報名</button>
+        </div>
+      </section>
+
+      <!-- 步驟二：確認與下載 -->
+      <section id="step2" class="step-section">
+        <h2><span class="step-number">2</span>確認與下載</h2>
+        <p class="section-description">請各部門主管或經辦確認部門同仁填報狀態。確認無誤後，可「鎖定」並「列印」簽核總表。</p>
+        <div id="department-status-table"></div>
+        <div class="action-buttons">
+            <select id="print-department-select" class="form-control"></select>
+            <button id="print-btn" class="btn btn-secondary">列印簽核表</button>
+            <button id="lock-btn" class="btn btn-warning">鎖定部門提交</button>
+        </div>
+      </section>
+
+      <!-- 步驟三：上傳與管理 -->
+      <section id="step3" class="step-section">
+        <h2><span class="step-number">3</span>上傳與管理</h2>
+        <p class="section-description">請將已核章完成的檔案(建議為PDF)透過此處上傳。您可於下方追蹤歷史上傳紀錄。</p>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="upload-department-select">選擇部門</label>
+                <select id="upload-department-select" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label for="uploader-name">上傳者姓名</label>
+                <input type="text" id="uploader-name" class="form-control" placeholder="請填寫您的姓名">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="upload-reason">上傳說明</label>
+            <input type="text" id="upload-reason" class="form-control" placeholder="例如：2025年Q1簽核完成">
+        </div>
+        <div class="form-group">
+            <label for="file-upload">選擇檔案</label>
+            <input type="file" id="file-upload" class="form-control">
+        </div>
+        <button id="upload-btn" class="btn btn-primary">上傳檔案</button>
+        
+        <h3>檔案上傳紀錄</h3>
+        <div id="file-log-table"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2025 員工工安教育訓練系統. All Rights Reserved.</p>
+    </footer>
+  </div>
+
+  <div id="loader" class="loader-overlay" style="display: none;">
+    <div class="loader-spinner"></div>
+    <p>處理中，請稍候...</p>
+  </div>
+
+  <?!= include('JavaScript'); ?>
+</body>
+</html>

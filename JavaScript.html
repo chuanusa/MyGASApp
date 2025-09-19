@@ -1,0 +1,310 @@
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // ===============================================================
+  // DOM 元素參考 (DOM Element References)
+  // ===============================================================
+  const departmentSelect = document.getElementById('department-select');
+  const nameSelect = document.getElementById('name-select');
+  const coursesSection = document.getElementById('courses-section');
+  const availableCoursesDiv = document.getElementById('available-courses');
+  const attendedCoursesUl = document.getElementById('attended-courses');
+  const submitBtn = document.getElementById('submit-btn');
+  const loader = document.getElementById('loader');
+  const modifierNameInput = document.getElementById('modifier-name');
+  const modificationReasonInput = document.getElementById('modification-reason');
+  const noParticipationCheckbox = document.getElementById('no-participation-checkbox');
+
+  const printDeptSelect = document.getElementById('print-department-select');
+  const printBtn = document.getElementById('print-btn');
+  const deptStatusTable = document.getElementById('department-status-table');
+
+  const uploadDeptSelect = document.getElementById('upload-department-select');
+  const uploaderNameInput = document.getElementById('uploader-name');
+  const uploadReasonInput = document.getElementById('upload-reason');
+  const fileUploadInput = document.getElementById('file-upload');
+  const uploadBtn = document.getElementById('upload-btn');
+  const fileLogTable = document.getElementById('file-log-table');
+
+  // ===============================================================
+  // 初始化 (Initialization)
+  // ===============================================================
+  
+  // 顯示/隱藏讀取動畫
+  const showLoader = (show) => { loader.style.display = show ? 'flex' : 'none'; };
+
+  // 載入部門資料
+  showLoader(true);
+  google.script.run
+    .withSuccessHandler(depts => {
+      populateSelect(departmentSelect, depts, '請先選擇部門...');
+      populateSelect(printDeptSelect, depts, '選擇部門以列印...');
+      populateSelect(uploadDeptSelect, depts, '選擇您的部門...');
+      showLoader(false);
+    })
+    .withFailureHandler(err => {
+        alert('無法載入部門資料: ' + err.message);
+        showLoader(false);
+    })
+    .getDepartments();
+
+  // 載入部門狀態
+  loadDepartmentStatus();
+
+  // ===============================================================
+  // 事件監聽 (Event Listeners)
+  // ===============================================================
+
+  // 部門選擇變更
+  departmentSelect.addEventListener('change', function() {
+    const selectedDept = this.value;
+    if (!selectedDept) return;
+
+    showLoader(true);
+    nameSelect.disabled = true;
+    coursesSection.style.display = 'none';
+    google.script.run
+      .withSuccessHandler(names => {
+        populateSelect(nameSelect, names, '請先選擇姓名...');
+        nameSelect.disabled = false;
+        showLoader(false);
+      })
+      .getNamesByDepartment(selectedDept);
+  });
+
+  // 姓名選擇變更
+  nameSelect.addEventListener('change', function() {
+    const selectedName = this.value;
+    if (!selectedName) return;
+
+    showLoader(true);
+    coursesSection.style.display = 'none';
+    modifierNameInput.value = selectedName; // 自動填入修改者姓名
+
+    google.script.run
+      .withSuccessHandler(data => {
+        displayCourses(data.available, data.attended);
+        coursesSection.style.display = 'block';
+        showLoader(false);
+      })
+      .getCoursesForUser(selectedName);
+  });
+
+  // 提交按鈕點擊
+  submitBtn.addEventListener('click', function() {
+    const name = nameSelect.value;
+    const modifier = modifierNameInput.value.trim();
+    const reason = modificationReasonInput.value.trim();
+
+    if (!name) {
+      alert('請選擇姓名！');
+      return;
+    }
+    if (!modifier || !reason) {
+      alert('請務必填寫【修改者姓名】與【修改理由】！');
+      return;
+    }
+
+    let selectedCourses = [];
+    if (noParticipationCheckbox.checked) {
+        selectedCourses = []; // 如果勾選不參加，則清空課程
+    } else {
+        selectedCourses = Array.from(document.querySelectorAll('.course-card.selected'))
+                               .map(card => card.dataset.courseName);
+    }
+
+    const submissionData = {
+      name: name,
+      courses: selectedCourses,
+      modifier: modifier,
+      reason: reason
+    };
+
+    showLoader(true);
+    google.script.run
+      .withSuccessHandler(response => {
+        showLoader(false);
+        alert(response.message);
+        if (response.success) {
+          // 重設介面
+          nameSelect.value = '';
+          coursesSection.style.display = 'none';
+          loadDepartmentStatus(); // 更新總覽
+        }
+      })
+      .withFailureHandler(err => {
+          showLoader(false);
+          alert('提交失敗: ' + err.message);
+      })
+      .submitRegistration(submissionData);
+  });
+
+  // 上傳按鈕點擊
+  uploadBtn.addEventListener('click', function() {
+      const department = uploadDeptSelect.value;
+      const uploader = uploaderNameInput.value.trim();
+      const reason = uploadReasonInput.value.trim();
+      const file = fileUploadInput.files[0];
+
+      if (!department || !uploader || !file) {
+          alert('請填寫部門、上傳者姓名並選擇檔案。');
+          return;
+      }
+
+      showLoader(true);
+      const reader = new FileReader();
+      reader.onload = function(e) {
+          const fileData = e.target.result;
+          const formObject = {
+              fileData: fileData,
+              fileName: file.name,
+              department: department,
+              uploader: uploader,
+              reason: reason
+          };
+          google.script.run
+              .withSuccessHandler(response => {
+                  showLoader(false);
+                  alert(response.message);
+                  if(response.success) fileUploadInput.value = '';
+              })
+              .withFailureHandler(err => {
+                  showLoader(false);
+                  alert('上傳失敗: ' + err.message);
+              })
+              .uploadFile(formObject);
+      };
+      reader.readAsDataURL(file);
+  });
+
+  // 列印按鈕點擊
+  printBtn.addEventListener('click', function() {
+      const department = printDeptSelect.value;
+      if (!department) {
+          alert('請選擇要列印的部門。');
+          return;
+      }
+      showLoader(true);
+      google.script.run
+          .withSuccessHandler(data => {
+              showLoader(false);
+              generatePrintWindow(department, data);
+          })
+          .getPrintData(department);
+  });
+
+  // ===============================================================
+  // UI 渲染函式 (UI Rendering Functions)
+  // ===============================================================
+
+  // 填充下拉選單
+  function populateSelect(selectElement, options, defaultText) {
+    selectElement.innerHTML = `<option value="" disabled selected>${defaultText}</option>`;
+    options.forEach(option => {
+      const opt = document.createElement('option');
+      opt.value = option;
+      opt.textContent = option;
+      selectElement.appendChild(opt);
+    });
+  }
+
+  // 顯示課程
+  function displayCourses(available, attended) {
+    availableCoursesDiv.innerHTML = '';
+    attendedCoursesUl.innerHTML = '';
+
+    if (available.length > 0) {
+      available.forEach(course => {
+        const card = document.createElement('div');
+        card.className = 'course-card';
+        card.dataset.courseName = course;
+        card.innerHTML = `
+          <input type="checkbox" class="course-checkbox">
+          <label>${course}</label>
+        `;
+        card.addEventListener('click', function(e) {
+            // 讓點擊整張卡片都能觸發 checkbox
+            if (e.target.type !== 'checkbox') {
+                const checkbox = this.querySelector('.course-checkbox');
+                checkbox.checked = !checkbox.checked;
+            }
+            this.classList.toggle('selected', this.querySelector('.course-checkbox').checked);
+        });
+        availableCoursesDiv.appendChild(card);
+      });
+    } else {
+      availableCoursesDiv.innerHTML = '<p>太棒了！您已完成所有指定課程！</p>';
+    }
+
+    if (attended.length > 0) {
+      attended.forEach(course => {
+        const li = document.createElement('li');
+        li.textContent = course;
+        attendedCoursesUl.appendChild(li);
+      });
+    } else {
+      attendedCoursesUl.innerHTML = '<li>尚無已報名或已完成的課程。</li>';
+    }
+  }
+
+  // 載入並顯示部門狀態
+  function loadDepartmentStatus() {
+      google.script.run
+          .withSuccessHandler(statuses => {
+              let tableHtml = '<table><tr><th>部門</th><th>填報進度</th><th>狀態</th></tr>';
+              statuses.forEach(s => {
+                  const percentage = s.total > 0 ? ((s.completed / s.total) * 100).toFixed(0) : 0;
+                  tableHtml += `
+                      <tr>
+                          <td>${s.department}</td>
+                          <td>${s.completed} / ${s.total} (${percentage}%)</td>
+                          <td>${s.status}</td>
+                      </tr>
+                  `;
+              });
+              tableHtml += '</table>';
+              deptStatusTable.innerHTML = tableHtml;
+          })
+          .getDepartmentStatus();
+  }
+
+  // 產生列印視窗
+  function generatePrintWindow(department, data) {
+      const printWindow = window.open('', '_blank');
+      let content = `
+          <html>
+          <head>
+              <title>${department} 工安課程報名總表</title>
+              <style>
+                  body { font-family: 'Microsoft JhengHei', sans-serif; margin: 40px; }
+                  h1, h2 { text-align: center; }
+                  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                  th, td { border: 1px solid black; padding: 8px; text-align: left; }
+                  th { background-color: #f2f2f2; }
+                  .signature { margin-top: 80px; float: right; }
+              </style>
+          </head>
+          <body>
+              <h1>${department}</h1>
+              <h2>員工工安教育訓練 報名總表</h2>
+              <table>
+                  <tr><th>姓名</th><th>報名課程</th></tr>
+      `;
+      for (const name in data) {
+          content += `<tr><td>${name}</td><td>${data[name].join(', ')}</td></tr>`;
+      }
+      content += `
+              </table>
+              <div class="signature">
+                  <p>部門主管簽核：_________________________</p>
+              </div>
+          </body>
+          </html>
+      `;
+      printWindow.document.write(content);
+      printWindow.document.close();
+      printWindow.print();
+  }
+
+});
+</script>
