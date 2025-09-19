@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
     showLoader(true);
     coursesSection.style.display = 'none';
     modifierNameInput.value = selectedName; // 自動填入修改者姓名
+    modificationReasonInput.value = '報名'; // 預設修改理由為報名
 
     google.script.run
       .withSuccessHandler(data => {
