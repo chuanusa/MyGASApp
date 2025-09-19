@@ -90,8 +90,9 @@ function getCoursesForUser(name) {
     const trainedSheet = ss.getSheetByName(SHEET_TRAINED);
     const recordSheet = ss.getSheetByName(SHEET_RECORD);
 
-    // 1. 獲取所有課程
-    const allCourses = allCoursesSheet.getRange('H2:H' + allCoursesSheet.getLastRow()).getValues().flat().filter(String);
+    // 1. 獲取所有課程 (包含名稱與簡稱)
+    const allCoursesData = allCoursesSheet.getRange('H2:I' + allCoursesSheet.getLastRow()).getValues();
+    const allCourses = allCoursesData.filter(row => row[0]).map(row => ({ name: row[0], shortName: row[1] }));
 
     // 2. 獲取已受訓清單中的課程
     const trainedData = trainedSheet.getRange('B2:C' + trainedSheet.getLastRow()).getValues();
@@ -101,12 +102,14 @@ function getCoursesForUser(name) {
     const recordData = recordSheet.getRange('C2:D' + recordSheet.getLastRow()).getValues();
     const registeredCourses = recordData.filter(row => row[0] === name).map(row => row[1]);
     
-    const attendedCourses = [...new Set([...trainedCourses, ...registeredCourses])];
-    const availableCourses = allCourses.filter(course => !attendedCourses.includes(course));
+    const attendedCourseNames = [...new Set([...trainedCourses, ...registeredCourses])];
+    
+    // 從所有課程中篩選出可報名的
+    const availableCourses = allCourses.filter(course => !attendedCourseNames.includes(course.name));
 
     return {
-      available: availableCourses,
-      attended: attendedCourses
+      available: availableCourses, // 回傳物件陣列 {name, shortName}
+      attended: attendedCourseNames // 回傳名稱字串陣列
     };
   } catch (e) {
     console.error('getCoursesForUser 失敗:', e);
