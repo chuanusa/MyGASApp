@@ -143,6 +143,7 @@
     border: 2px solid #eef0f3;
     display: flex;
     align-items: center;
+    justify-content: space-between; /* 這會將內容和 checkbox 推向兩邊 */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   }
 
@@ -159,12 +160,25 @@
     background-color: #f4f2ff;
   }
 
+  .course-card-content {
+    display: flex;
+    flex-direction: column; /* 讓主標題和副標題垂直排列 */
+    justify-content: center;
+    flex-grow: 1; /* 讓此容器佔據多數空間 */
+    margin-right: 15px; /* 與 checkbox 保持一些距離 */
+  }
+
+  .course-name {
+    font-weight: 500;
+    color: #334155;
+    margin-bottom: 5px; /* 在主標題和副標題之間增加一些間距 */
+  }
+
   .course-card .course-checkbox {
     -webkit-appearance: none;
     appearance: none;
     background-color: #fff;
     margin: 0;
-    margin-right: 15px;
     font: inherit;
     color: currentColor;
     width: 1.5em;
@@ -175,6 +189,7 @@
     display: grid;
     place-content: center;
     cursor: pointer;
+    flex-shrink: 0; /* 防止 checkbox 縮小 */
   }
 
   .course-card .course-checkbox::before {
@@ -290,6 +305,29 @@
       background-color: #f8f9fa;
       font-weight: 700;
       color: #495057;
+  }
+
+  .progress-bar-container {
+    width: 100%;
+    background-color: #e9ecef;
+    border-radius: 8px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background-color: var(--success-color);
+    border-radius: 8px 0 0 8px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: width 0.5s ease-in-out;
   }
 
   /* Loader Styles */

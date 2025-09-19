@@ -218,13 +218,15 @@ document.addEventListener('DOMContentLoaded', function() {
       available.forEach(course => {
         const card = document.createElement('div');
         card.className = 'course-card';
-        card.dataset.courseName = course;
+        card.dataset.courseName = course.name; // 儲存課程全名
         card.innerHTML = `
+          <div class="course-card-content">
+            <span class="course-name">${course.name}</span>
+            <span class="course-short-name">${course.shortName}</span>
+          </div>
           <input type="checkbox" class="course-checkbox">
-          <label>${course}</label>
         `;
         card.addEventListener('click', function(e) {
-            // 讓點擊整張卡片都能觸發 checkbox
             if (e.target.type !== 'checkbox') {
                 const checkbox = this.querySelector('.course-checkbox');
                 checkbox.checked = !checkbox.checked;
@@ -258,7 +260,12 @@ document.addEventListener('DOMContentLoaded', function() {
                   tableHtml += `
                       <tr>
                           <td>${s.department}</td>
-                          <td>${s.completed} / ${s.total} (${percentage}%)</td>
+                          <td>
+                              <div class="progress-bar-container">
+                                  <div class="progress-bar-fill" style="width: ${percentage}%;">${percentage}%</div>
+                              </div>
+                              <span style="font-size: 0.9rem; color: #6c757d;">${s.completed} / ${s.total}</span>
+                          </td>
                           <td>${s.status}</td>
                       </tr>
                   `;

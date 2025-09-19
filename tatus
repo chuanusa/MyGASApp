@@ -1,0 +1,23 @@
+[33mcommit a8cea413f23263962c83998078949a1ecb53a7b6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: chuanusa <usausachuan@gmail.com>
+Date:   Fri Sep 19 23:01:35 2025 +0800
+
+    新增設計準則與優化排版
+
+[33mcommit 79895544715ead9ffa6445d43a992b64c77dc4db[m
+Author: chuanusa <usausachuan@gmail.com>
+Date:   Fri Sep 19 22:25:47 2025 +0800
+
+    修正報名卡片結構字
+
+[33mcommit f8e598562ffd13ed176ec975144f9427a1930b80[m
+Author: chuanusa <usausachuan@gmail.com>
+Date:   Fri Sep 19 22:20:24 2025 +0800
+
+    第2次修改，改為員工訓練調查表
+
+[33mcommit 08b3ce7a7e6f88231a56fba26e2b5653ab7a3e07[m
+Author: chuanusa <usausachuan@gmail.com>
+Date:   Fri Sep 19 21:34:12 2025 +0800
+
+    第一次提交：初始程式碼
